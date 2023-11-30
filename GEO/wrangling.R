@@ -40,7 +40,7 @@ fpkm_to_tpm <- function(fpkm_dat){
 
 
 # Load data 
-load("edata.rda")
+load("dat/edata.rda")
 
 # Pre-processing : convert from FPKM to TPM 
 
