@@ -3,9 +3,6 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 
-# load function for analysis
-source("functions2.R")
-
 # load dataset
 load("dat/rip1.rda")
 
