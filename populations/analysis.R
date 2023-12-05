@@ -39,6 +39,13 @@ rip %>%
   group_by(RIL) %>% 
   summarize(across("dias", list(mean = mean, sd = sd))) %>% 
   arrange(desc(dias_mean))
-    
+
+rip %>% 
+  group_by(RIL, repetition) %>% 
+  summarise(dias = min(dias)) %>% 
+  ungroup() %>% 
+  group_by(RIL) %>% 
+  summarize(across("dias", list(mean = mean, sd = sd))) %>% 
+  arrange(desc(dias_mean))
 
 
