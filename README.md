@@ -7,6 +7,7 @@ You can find a list of our latest research and/or publications here :
 # Resources
 
  * NCBI [chickpea](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/331/145/GCF_000331145.1_ASM33114v1/) FTP site (GCF_000331145.1_ASM33114v1)    
- * NCBI [genomes](https://ftp.ncbi.nlm.nih.gov/genomes/all/) FTP site  
+ * NCBI [genomes](https://ftp.ncbi.nlm.nih.gov/genomes/all/) FTP site
+ * [SRA-Explorer](https://sra-explorer.info/)
    
 
