@@ -1,5 +1,6 @@
 # MADS-box.R -- a set of common functions for analysis of MADS-box family in Ca
-# Copyright (C) 2023 Jose V. Die  <jose.die@uco.es>
+# Copyright (C) 2023 Jose V. Die  <jose.die@uco.es> 
+# Copyright (C) 2023 Alejandro Carmona  <b62cajia@uco.es> 
 # Distributed under terms of the MIT license.
 
 
@@ -43,53 +44,20 @@ setwd("mads_box/")
 # 
 # 
 # 
-# # --- Iterative BLAST (Feb 13, 2023) ----
+# # --- Iterative BLAST  ----
 # hitFile <- "dat/YN34UYFE013-Alignment-HitTable.csv"
 # res <- blast_best_homolog(hitFile)
 # ca_MADSbox <-  res %>% pull(subject)
 # 
 # xps # Illatia first list 
-# xps <- unique(xps) # unique XP ids from Ilaria first list 
+# xps <- unique(xps) # unique XP ids from the original first list 
 # 
 # # add 1st XP id 
 # ca_MADSbox <- c(ca_MADSbox, res$query[1])
 # 
 # 
-# # --- checks 
-# hist(res$evalue)
-# 
-# hist(res$identity)
-# abline(v = 70, col = "red")
-# 
-# ids70 <- res %>% 
-#   filter(identity >=70) %>% 
-#   pull(subject)
-# 
-# ids70 %in% xps
-# ids70[!ids70 %in% xps]
-# 
-# 
-# "XP_027187420.1" %in% xps
-# 
-# 
-# ids50 <- res %>% 
-#   filter(identity >=50) %>% 
-#   pull(subject)
-# 
-# ids50[!ids50 %in% xps]
-# 
-# 
-# ids30 <- res %>% 
-#   filter(identity >=30) %>% 
-#   pull(subject)
-# 
-# ids30[!ids30 %in% xps]
 
-
-
-
-
-# --- Get the mRNA sequence (Feb 27, 2023) ----
+# --- Get the mRNA sequence ----
 
 # Read object 
 xps <- read.csv("dat/Mads_XP_unici.csv")
@@ -99,7 +67,7 @@ xps <- xps$list
 xps <- unique(xps)
 
 
-# --- Iterative BLAST (Feb 27, 2023) ----
+# --- Iterative BLAST  ----
 hitFile <- "dat/ZT55WJYH01N-Alignment-HitTable.csv"
 
 blast_res <- blast_homologs(hitFile, ident = 55, cover = 85)
@@ -177,19 +145,6 @@ tdat <- tdat %>%
 write.csv(tdat, file = "res/my_table.csv", row.names=FALSE)
 
 
-# Make some plots
-boxplot(tdat$exon, main = "MADS-box Family", ylab = "Exon number")
-stripchart(tdat$exon, vertical = TRUE, method = "jitter", 
-           add = TRUE, col = "steelblue", pch = 19, cex = 0.9)
-
-boxplot(tdat$AA, main = "MADS-box Family", ylab = "Protein (aa)")
-stripchart(tdat$AA, vertical = TRUE, method = "jitter", 
-           add = TRUE, col = "steelblue", pch = 19, cex = 0.9)
-
-boxplot(tdat$mol_wt, main = "MADS-box Family", ylab = "Molecular Weight (kDa)")
-stripchart(tdat$mol_wt, vertical = TRUE, method = "jitter", 
-           add = TRUE, col = "steelblue", pch = 19, cex = 0.9)
-
 # Make some tidy 
 rm(nisof, targets)
 rm(ca_MADSbox, hitFile, ids30, ids50, ids70)
@@ -256,9 +211,6 @@ gr <- sort(gr)
 save(seqs, gr, file = "res/sequences.rda")
 
 
-## Puedo a??adir metadatos GENEID to match gene information across different Genbank databases) 
-# Introduction to Bioconductor / Week 2/ Genes as GRanges / min 1.21
-
 
 ## Manipulating GR object
 ranges(gr)[1:3]
@@ -266,11 +218,9 @@ sort(table(seqnames(gr)), decreasing = TRUE)
 gr[seqnames(gr) == "Ca1"]
 gr[seqnames(gr) == "Ca3"]
 
-# si hago plotGRanges el plot es similar a plotIRanges pero sale el
-# nombre del chromosoma. Y admite color!
-# Introduction to Bioconductor / Week 3/ Operating with GRanges / min 6. 21
 
-# Grabo gr (into .bed file) para no tener que hacer todo el recorrido
+
+# Save gr into .bed file)
 ##The only trick is remembering the BED uses 0-based coordinates. 
 ##If you have a GRangesList rather than a GRanges object, just use unlist(gr) 
 ##in place of gr (things should still be in the same order).
@@ -324,11 +274,6 @@ genome = BSgenome.Carietinum.NCBI.v1
 # [esto es mas eficiente que hacer loops sobre el BSGenome]
 levels(seqnames(gr))
 
-# gr.tss = GRangesList(TSScoordinates(gr, mads_cds, "Ca1"),
-#                      TSScoordinates(gr, mads_cds, "Ca3"), 
-#                      TSScoordinates(gr, mads_cds, "Ca4"))
-# 
-
 gr.tss= GRangesList(sapply(paste0("Ca", 1:8), function(i) TSScoordinates(gr, mads_cds, i)))
 gr.tss = unlist(gr.tss)
 
@@ -339,14 +284,6 @@ save(seqs, gr, gr.tss, file = "res/sequences.rda")
 
 # Now we use the TSS coordinates to extract -1500 nt representing the promoter
 gr.promoters = promoters(gr.tss, upstream=1500, downstream=9)
-
-# Con las coordenadas del promotor puedo extraer la seq del promotor 
-# Hago TSScoordinates con los Chr que tenga en el GR
-# esto es mas eficiente que hacer loops sobre el BSGenome 
-# prom = DNAStringSet(c(get_promoters(gr = gr.promoters, chr = "Ca1"),
-#                       get_promoters(gr = gr.promoters, chr = "Ca3"), 
-#                       get_promoters(gr = gr.promoters, chr = "Ca4")))
-# 
 
 prom = sapply(paste0("Ca", 1:8), function(i) {
   get_promoters(gr = gr.promoters, chr = i)})
@@ -411,13 +348,6 @@ Rprobe <- "CGTTGTTCACAAATATGCGG"
 matchProbePair(Fprobe, Rprobe, promoters[[1]]) #theoretical amplicon : None
 
 
-
-
-
-
-letterFrequency(promoters, c("A", "C"), as.prob = T)
-alphabetFrequency(promoters, as.prob = T)[,1:4]
-
 # Base composition of the dataset 
 apply(alphabetFrequency(promoters, as.prob = T)[,1:4], 2, mean)
 prom_freq <- apply(alphabetFrequency(promoters, as.prob = T)[,1:4], 2, mean)
@@ -446,7 +376,7 @@ writeXStringSet(DNAStringSet(mc_prom_synth), filepath="res/promoters_synthetic.f
 
 
 
-# --- Outline ----
+# --- Outline Prommoter Analyis ----
 
 # Search for number of occurrences in the actual dataset
 # Estimate %GC content
