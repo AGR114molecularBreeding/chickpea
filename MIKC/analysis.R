@@ -20,7 +20,7 @@ setwd("mads_box/")
 ## -----------------------------------------------------------------------------
 
 
-# # --- Get the mRNA sequence (Feb 13, 2023) ----
+# # --- Get the mRNA sequence ----
 # 
 # # Read object 
 # xps <- read.csv("dat/HITS_Hom_chickpea_Ilaria.csv")
