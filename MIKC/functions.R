@@ -160,6 +160,8 @@ characterizeTable <- function(targets) {
 
 
 TSScoordinates <- function(gr, CDSstringset, chr) {
+
+  #Get the coordinates of the Transcription Start Site of genes
   
   CDSstringset = unique(CDSstringset)
   gr.tss = gr[seqnames(gr) == chr]
@@ -239,6 +241,8 @@ get_before_period <- function(str) {
 
                                                              
 get_promoters <- function(gr, chr = "Ca3") {
+
+  #Get the promoter sequence of the studied genes
   
   inputGR = gr[seqnames(gr) == chr]  
   text = genome[[which(seqnames(genome) == chr)]]
