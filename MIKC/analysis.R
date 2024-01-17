@@ -1,4 +1,4 @@
-# MADS-box.R -- a set of common functions for analysis of MADS-box family in Ca
+# MADS-box.R -- a set of common functions for analysis of MADS-box MIKC-type family in Ca
 # Copyright (C) 2023 Jose V. Die  <jose.die@uco.es> 
 # Copyright (C) 2023 Alejandro Carmona  <b62cajia@uco.es> 
 # Distributed under terms of the MIT license.
@@ -11,56 +11,53 @@ library(refseqR)
 library(rentrez)
 
 # Load functions 
-source("mads_box/functions.R")
+source("MIKC/functions.R")
 
 # Set wd
-setwd("mads_box/")
+setwd("MIKC/")
 
 ## -----------------------------------------------------------------------------
 ##                    Gene Family Identification
 ## -----------------------------------------------------------------------------
 
 
-# # --- Get the mRNA sequence ----
-# 
-# # Read object 
-# xps <- read.csv("dat/HITS_Hom_chickpea_Ilaria.csv")
-# 
-# # Make a vector 
-# xps <- xps$list
-# 
-# # fix some typo : 
-# xps[88] = "XP_004498126.1"
-# 
-# # Get XM ids from XP ids. 
-# xms <- sapply(xps, function(xp) getXM(xp), USE.NAMES = FALSE)
-# 
-# # Save an object containing the corresponding XM, XP
-# seqs <- list(unname(xms), xps)
-# save(seqs, file = "res/sequences.rda")
-# 
-# # Make a multi-fasta file from XM ids 
-# save_CDSfasta_from_xms(xms, nameFile = "res/mads_cds")
-# 
-# 
-# 
-# # --- Iterative BLAST  ----
-# hitFile <- "dat/YN34UYFE013-Alignment-HitTable.csv"
-# res <- blast_best_homolog(hitFile)
-# ca_MADSbox <-  res %>% pull(subject)
-# 
-# xps # Illatia first list 
-# xps <- unique(xps) # unique XP ids from the original first list 
-# 
-# # add 1st XP id 
-# ca_MADSbox <- c(ca_MADSbox, res$query[1])
-# 
-# 
+# --- Get the mRNA sequence ----
+
+# Read object 
+xps <- read.csv("dat/ZT55WJYH01N-Alignment-HitTable.csv")
+
+# Make a vector 
+xps <- xps$list 
+# Fix some typo : 
+xps[88] = "XP_004498126.1"
+
+# Get XM ids from XP ids. 
+xms <- sapply(xps, function(xp) getXM(xp), USE.NAMES = FALSE)
+
+# Save an object containing the corresponding XM, XP
+seqs <- list(unname(xms), xps)
+save(seqs, file = "res/sequences.rda")
+
+# Make a multi-fasta file from XM ids 
+save_CDSfasta_from_xms(xms, nameFile = "res/mads_cds")
+
+
+
+# --- Iterative BLAST  ----
+hitFile <- "dat/YN34UYFE013-Alignment-HitTable.csv"
+res <- blast_best_homolog(hitFile)
+ca_MADSbox <-  res %>% pull(subject)
+xps <- unique(xps) # Unique XP ids from the original first list 
+
+# Add 1st XP id 
+ca_MADSbox <- c(ca_MADSbox, res$query[1])
+
+
 
 # --- Get the mRNA sequence ----
 
 # Read object 
-xps <- read.csv("dat/Mads_XP_unici.csv")
+xps <- read.csv("dat/Mads_XP_unique.csv")
 
 # Make a vector 
 xps <- xps$list
@@ -70,7 +67,7 @@ xps <- unique(xps)
 # --- Iterative BLAST  ----
 hitFile <- "dat/ZT55WJYH01N-Alignment-HitTable.csv"
 
-blast_res <- blast_homologs(hitFile, ident = 55, cover = 85)
+blast_res <- blast_homologs(hitFile, ident = 55, cover = 90)
 
 
 # Gene family is made of : 
@@ -159,7 +156,7 @@ rm(tlengths_sub)
 ##                    GRanges object
 ## -----------------------------------------------------------------------------
 
-# Negative widths are not allowed by IRanges, so let's define the true 
+# Negative widths are not allowed by IRanges, so we have to define the true 
 # coordinates and build a new data frame, which is the input for the function 
 # 'makeGRangesFromDataFrame'
 
@@ -191,18 +188,19 @@ gr <- makeGRangesFromDataFrame(gr, start.field = "Coordstart",
 # Add genome
 genome(gr) = "ASM33114v1"
 
-# filter out 'unplaced' seqs (9 seqs! ; filter out??)
+# Filter out 'unplaced' seqs
 gr <- gr[seqnames(gr) != "Un"]
 
-# add seqlengths 
+# Add seqlengths 
 seqinfo(gr)
+              
 # NCBI, Frontier : https://www.ncbi.nlm.nih.gov/genome/?term=chickpea 
 # size = c(48.36, 36.63, 39.99, 49.19, 48.17, 59.46, 48.96, 16.48)
 genome(gr)
 isCircular(gr)
 #seqlengths(gr) = c(NA, 48.36, 39.99, 49.19)
 
-# order the GR object by chr and then by region location
+# Order the GR object by chr and then by region location
 sort(table(seqnames(gr)), decreasing = TRUE)
 # gr[order(gr), ]
 gr <- sort(gr)
@@ -223,23 +221,23 @@ gr[seqnames(gr) == "Ca3"]
 # Save gr into .bed file)
 ##The only trick is remembering the BED uses 0-based coordinates. 
 ##If you have a GRangesList rather than a GRanges object, just use unlist(gr) 
-##in place of gr (things should still be in the same order).
+##In place of gr (things should still be in the same order).
 
-# df <- data.frame(seqnames=seqnames(gr),
-#                  starts=start(gr)-1,
-#                  ends=end(gr),
-#                  names=c(rep(".", length(gr))),
-#                  scores=c(rep(".", length(gr))),
-#                  strands=strand(gr))
-# 
-# 
-# write.table(df, file="tdat.bed", quote=F, sep="\t", row.names=F, col.names=F)
+df <- data.frame(seqnames=seqnames(gr),
+                 starts=start(gr)-1,
+                 ends=end(gr),
+                 names=c(rep(".", length(gr))),
+                 scores=c(rep(".", length(gr))),
+                 strands=strand(gr))
+
+
+write.table(df, file="tdat.bed", quote=F, sep="\t", row.names=F, col.names=F)
 
 ## Now, opposite direction : read .bed file to build a GRanges object
-# bed = read.table("tdat.bed",header=F)
-# colnames(bed) <- c('chr','start','end','id','strand')
-# head(bed)
-# gr <- with(bed, GRanges(chr, IRanges(start+1, end), strand=strand, id=id))
+bed = read.table("tdat.bed",header=F)
+colnames(bed) <- c('chr','start','end','id','strand')
+head(bed)
+gr <- with(bed, GRanges(chr, IRanges(start+1, end), strand=strand, id=id))
 
 
 # --- Promoter sequence -----
@@ -253,10 +251,10 @@ length(fasta.seqlengths("res/mads_cds.fasta"))
 fasta.seqlengths("res/mads_cds.fasta")
 names(fasta.seqlengths("res/mads_cds.fasta"))
 
-# Load mRNA seqs + convert into a DNAStringSet {Biostrings}
+# Load mRNA sequences + convert into a DNAStringSet {Biostrings}
 mads_cds = readDNAStringSet("res/mads_cds.fasta")
 
-# Convert names to LOCname
+# Convert names to LOCnames
 my_names = names(mads_cds)
 my_names <- sapply(my_names, function(i) names2LOC(i), USE.NAMES = F)
 names(mads_cds) = my_names
@@ -266,12 +264,11 @@ mads_cds
 library(BSgenome.Carietinum.NCBI.v1)
 ## {BSgenome.Carietinum.NCBI.v1} Cicer arietinum full genome (ver. NCBI)
 genome = BSgenome.Carietinum.NCBI.v1
-#genome$Ca1 #this loads Chr1 into computer memory
-#ca1 = genome[[1]]  #loads Chr1 into computer memory
+genome$Ca1 #this loads Chr1 into computer memory
+ca1 = genome[[1]]  #loads Chr1 into computer memory
 
 
 # Parse `TSScoordinates` on Chrs presented in the GR object
-# [esto es mas eficiente que hacer loops sobre el BSGenome]
 levels(seqnames(gr))
 
 gr.tss= GRangesList(sapply(paste0("Ca", 1:8), function(i) TSScoordinates(gr, mads_cds, i)))
@@ -290,10 +287,10 @@ prom = sapply(paste0("Ca", 1:8), function(i) {
 
 prom = DNAStringSet(unlist(prom))
 
-names(prom) =  gr.promoters$LOC #ojo, debo haberlos corrido 'get_promoter' por orden de Chr
+names(prom) =  gr.promoters$LOC
 names(prom) = paste0(names(prom), "_promoter")
 
-#check ATG
+# Check ATG
 subseq(prom, start = 1501, end = 1509)
 
 
@@ -301,7 +298,7 @@ subseq(prom, start = 1501, end = 1509)
 writeXStringSet(prom, filepath="res/promoters.fasta", format="fasta")  
 
 
-# hacer estima de frecuencia de bases para crear datos sinteticos 
+# Estimate base frequency to create synthetic data 
 ## {Biostrings} Extract basic information about FASTA files
 ## without actually loading the sequence data:
 length(fasta.seqlengths("res/promoters.fasta"))
