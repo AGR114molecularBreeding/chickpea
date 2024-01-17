@@ -1,30 +1,33 @@
-# MADS-box.R -- a set of common functions for analysis of MADS-box family in Ca
+# MADS-box.R -- a set of common functions for analysis of MADS-box MIKC-type family in Ca
 # Copyright (C) 2024 Jose V. Die  <jose.die@uco.es>
 # Distributed under terms of the MIT license.
 
 
+
 get_xp_length <- function(xp_id){
-  ### ''' Estimate protein length (aa)
+  ### Estimate protein length (aa)
   
   xpinfo <- entrez_summary(db = "protein", id = xp_id)
   xpinfo$slen
   
 }
 
+
+
 blast_homologs <- function(hitFile, ident, cover) {
   
-  ### ''' Take a csv table with Blast hits and return a 
-  ### subset filteres by %Identity & %Coverage (longer sequence)
+  ### Take a csv table with Blast hits and return a 
+  ### subset filtered by %Identity & %Coverage (longer sequence)
   
-  # read downloaded Hit file
+  # Read downloaded Hit file
   hit = read.csv(hitFile, header = FALSE, stringsAsFactors = FALSE)
   
-  # change colnames
+  # Change colnames
   colnames(hit) = c("query", "subject", "identity", "align_length", "mismatches",
                     "gap_opens", "q.start", "q.end", "s.start", "s.end", "evalue",
                     "bit_score", "%positives")
   
-  # make a table_length for queries & subjects 
+  # Make a table_length for queries & subjects 
   queries <- hit %>% 
     pull(query) %>% 
     unique()
@@ -38,9 +41,9 @@ blast_homologs <- function(hitFile, ident, cover) {
   tlengths_sub = tibble(subject = subjects, len.sub = sapply(subject, function(i) get_xp_length(i)))
   
   
-  # combine hit_table with queries & subjects lengths 
-  # estimate coverage (longer sequence)
-  # apply filters : identity * coverage
+  # Combine hit_table with queries & subjects lengths 
+  # Estimate coverage (longer sequence)
+  # Apply filters : identity * coverage
   hit %>% 
     tibble() %>% 
     select(-c(align_length, bit_score, "%positives", mismatches, gap_opens)) %>% 
@@ -60,12 +63,11 @@ blast_homologs <- function(hitFile, ident, cover) {
 }
  
 
-
  
 blast_best_homolog <- function(hitFile) {
   
-  ### ''' Take a csv table with Blast hits and return a 
-  ### subset containing only the best hit for each query '''
+  ### Take a csv table with Blast hits and return a 
+  ### subset containing only the best hit for each query
   
   # Read Downloaded Hit file
   hit = read.csv(hitFile, header = FALSE, stringsAsFactors = FALSE)
@@ -88,8 +90,6 @@ blast_best_homolog <- function(hitFile) {
 ## Usage
 ## Ex. multiple blastp searches (with 2 sequences)
 ## best_homolog("B1J2TDTZ01R-Alignment-HitTable.csv"
-
-
 
 
 
@@ -124,8 +124,8 @@ characterizeTable <- function(targets) {
     LOC = c(LOC, paste0("LOC",genesummary$uid))
     Chr = c(Chr, genesummary$chromosome)
     
-    # defensive programming
-    # some XP may not have chrstart, chrstop or exon count
+    # Defensive programming
+    # Some XP may not have chrstart, chrstop or exon count
     if(length(genesummary$genomicinfo$chrstart) != 0) {
       chr_s = c(chr_s, genesummary$genomicinfo$chrstart)
       chr_e = c(chr_e, genesummary$genomicinfo$chrstop)
@@ -196,7 +196,6 @@ TSScoordinates <- function(gr, CDSstringset, chr) {
   
 }
 
-
 ## Usage
 ## gr.tss = GRangesList(TSScoordinates(gr, mads_cds, "Ca1"),
 ##                      TSScoordinates(gr, mads_cds, "Ca3"), 
@@ -216,6 +215,7 @@ names2LOC <- function(str) {
 ## my_names <- sapply(my_names, function(i) names2LOC(i), USE.NAMES = F)
 
 
+                                                             
 names2XM <- function(str) {
   # Take a vector string (header from multifasta file) 
   # Return the XM id in a tidy format
@@ -228,7 +228,7 @@ names2XM <- function(str) {
 get_before_period <- function(str) {
   
   # Return a string vector without the characters 
-  # before a period (excluding the period)
+  # Before a period (excluding the period)
   
   # str, a string vector 
   
@@ -237,6 +237,7 @@ get_before_period <- function(str) {
 }
 
 
+                                                             
 get_promoters <- function(gr, chr = "Ca3") {
   
   inputGR = gr[seqnames(gr) == chr]  
