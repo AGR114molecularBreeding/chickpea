@@ -15,27 +15,17 @@ fpkm_to_tpm <- function(fpkm_dat){
   # ''' next columns with samples
   
   
-  # Extract FPKM values
-  fpkm_values <- fpkm_dat %>% select(-1)
   
-  # Sum of FPKM values per sample
-  total_fpkm_per_sample <- colSums(fpkm_values)
+  pivot_longer(-names(fpkm_dat)[1], names_to = "tissue", values_to = "fpkm") %>% # reshape the data 
   
-  # Scaling factor per sample
-  scaling_factor<- total_fpkm_per_sample / 1e6
+  group_by(tissue) %>% 
   
-  # Calculate TPM values
-  tpm_values <- fpkm_values / scaling_factor
+  mutate(total_fpkm_per_sample = sum(fpkm),                     # sum of FPKM values per sample
+           scaling_factor  = total_fpkm_per_sample/ 1e6,        # scaling factor per sample
+           tpm_values = fpkm / scaling_factor) %>%              # calculate TPM values
   
-  # Add Gene column to the TPM matrix
-  tpm_values <- tpm_values %>% 
-    bind_cols(fpkm_dat %>% select(1)) %>% 
-    select(names(fpkm_dat)[1], everything())
-  
-  # Return tmp values
-  as_tibble(tpm_values)
-  
-  
+  select(names(fpkm_dat)[1], tissue, tpm_values) %>% 
+  pivot_wider(names_from = "tissue", values_from = tpm_values)   # return tpm values in the original data shape
 } 
 
 
